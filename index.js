@@ -80,7 +80,7 @@ const getConnector = function (opts) {
 const listConnectors = function (cb, err) {
   SerialPort.list()
     .then(cb)
-    .error(error => err(error));
+    .catch(err);
 }
 
 /**
