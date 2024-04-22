@@ -15,24 +15,26 @@ describe('obd-serial-connection', function () {
 
   function getDummyCon(err) {
     return proxyquire('index.js', {
-      serialport: (function () {
-        function SerialPort() {
-          EventEmitter.call(this);
+      serialport: {
+        SerialPort: (function () {
+          function SerialPort() {
+            EventEmitter.call(this);
 
-          setTimeout((function () {
-            if (err) {
-              this.emit('error', new Error('fake error'));
-            } else {
-              this.emit('open');
-            }
-          }).bind(this));
-        }
-        util.inherits(SerialPort, EventEmitter);
+            setTimeout((function () {
+              if (err) {
+                this.emit('error', new Error('fake error'));
+              } else {
+                this.emit('open');
+              }
+            }).bind(this));
+          }
+          util.inherits(SerialPort, EventEmitter);
 
-        SerialPort.list = () => new Promise((resolve) => resolve(["COM_FOO", "COM_BAR"]));
+          SerialPort.list = () => new Promise((resolve) => resolve(["COM_FOO", "COM_BAR"]));
 
-        return SerialPort
-      })()
+          return SerialPort
+        })()
+      }
     });
   }
 

@@ -1,6 +1,6 @@
 'use strict';
 
-const SerialPort = require('serialport')
+const SerialPort = require('serialport').SerialPort;
 const VError = require('verror')
 const assert = require('assert')
 const debug = require('debug')(require('./package.json').name);
