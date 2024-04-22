@@ -13,10 +13,10 @@ describe('obd-serial-connection', function () {
 
   var con = null;
 
-  function getDummyCon (err) {
+  function getDummyCon(err) {
     return proxyquire('index.js', {
       serialport: (function () {
-        function SerialPort () {
+        function SerialPort() {
           EventEmitter.call(this);
 
           setTimeout((function () {
@@ -29,6 +29,8 @@ describe('obd-serial-connection', function () {
         }
         util.inherits(SerialPort, EventEmitter);
 
+        SerialPort.list = () => new Promise((resolve) => resolve(["COM_FOO", "COM_BAR"]));
+
         return SerialPort
       })()
     });
@@ -39,34 +41,35 @@ describe('obd-serial-connection', function () {
     con = require('index.js');
   });
 
-  it('should export a function', function () {
-    expect(con).to.be.a('function');
+  it('should export two functions', function () {
+    expect(con.getConnector).to.be.a('function');
+    expect(con.listConnectors).to.be.a('function');
   });
 
-  it('should throw an assertion error (opts.serialPath missing)', function () {
+  it('getConnector should throw an assertion error (opts.serialPath missing)', function () {
     expect(() => {
-      con({})
+      con.getConnector({})
     }).to.throw('opts.serialPath should be a string provided to obd-serial-connection');
   });
 
-  it('should throw an assertion error (opts.serialOpts missing)', function () {
-    expect(con.bind(con, {
+  it('getConnector should throw an assertion error (opts.serialOpts missing)', function () {
+    expect(con.getConnector.bind(con.getConnector, {
       serialPath: 'dev/some-path',
     })).to.throw('opts.serialOpts should be an Object provided to obd-serial-connection');
   });
 
-  it('should return a function', function () {
-    expect(con({
+  it('getConnector should return a function', function () {
+    expect(con.getConnector({
       serialPath: 'dev/some-path',
       serialOpts: {}
     })).to.be.a('function');
   });
 
-  it('should return a promise and resolve successfully', function () {
+  it('getConnector should return a promise and resolve successfully', function () {
 
-    con = getDummyCon(false);
+    con = getDummyCon(false).getConnector;
 
-    function configureFn () {
+    function configureFn() {
       return new Promise(function (resolve, reject) {
         setTimeout(resolve, 0);
       });
@@ -83,11 +86,11 @@ describe('obd-serial-connection', function () {
       });
   });
 
-  it('should return a promise and reject with connection error', function () {
+  it('getConnector should return a promise and reject with connection error', function () {
 
-    con = getDummyCon(true);
+    con = getDummyCon(true).getConnector;
 
-    function configureFn () {
+    function configureFn() {
       return new Promise(function (resolve, reject) {
         setTimeout(resolve, 0);
       });
@@ -101,6 +104,16 @@ describe('obd-serial-connection', function () {
     return expect(p).to.be.eventually.rejectedWith(
       'failed to connect to ecu: fake error'
     );
+  });
+
+  it('listConnectors should hit callback when success', function (done) {
+
+    con = getDummyCon(false).listConnectors;
+
+    con(connections => {
+      expect(connections).to.deep.equal(["COM_FOO", "COM_BAR"]);
+      done();
+    });
   });
 
 });

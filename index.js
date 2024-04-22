@@ -19,7 +19,7 @@ var connQ = [];
  * @param  {Object}   opts
  * @return {Promise | Socket}
  */
-module.exports = function (opts) {
+const getConnector = function (opts) {
 
   assert.equal(
     typeof opts,
@@ -39,7 +39,7 @@ module.exports = function (opts) {
     'opts.serialOpts should be an Object provided to obd-serial-connection'
   );
 
-  return function _obdSerialConnectorFn (configureFn) {
+  return function _obdSerialConnectorFn(configureFn) {
     assert.equal(
       typeof configureFn,
       'function',
@@ -77,12 +77,18 @@ module.exports = function (opts) {
   };
 };
 
+const listConnectors = function (cb, err) {
+  SerialPort.list()
+    .then(cb)
+    .error(error => err(error));
+}
+
 /**
  * Parses serial data and emits and event related to the PID of the data.
  * Pollers will listen for events related to their PID
  * @param {String} str
  */
-function onSerialData (str) {
+function onSerialData(str) {
   debug('received obd data %s', str);
 }
 
@@ -91,7 +97,7 @@ function onSerialData (str) {
  * Resolves/rejects any pending connection requests, depending on Error passed
  * @param  {Error} err
  */
-function respondToConnectionRequests (err) {
+function respondToConnectionRequests(err) {
   connQ.forEach(function (req) {
     if (err) {
       req.reject(err);
@@ -107,7 +113,7 @@ function respondToConnectionRequests (err) {
  * all errors are cpatured and logged.
  * @param  {Erorr} err
  */
-function onSerialError (err) {
+function onSerialError(err) {
   debug('serial emitted an error %s', err.toString());
   debug(err.stack);
 }
@@ -121,7 +127,7 @@ function onSerialError (err) {
  *
  * @param  {Error} err
  */
-function onConnectionOpened (configureFn, err) {
+function onConnectionOpened(configureFn, err) {
   if (err) {
     err = new VError(err, 'failed to connect to ecu');
 
@@ -136,7 +142,7 @@ function onConnectionOpened (configureFn, err) {
     conn.on('data', onSerialData);
 
     return configureFn(conn)
-      .then(function onConfigurationComplete () {
+      .then(function onConfigurationComplete() {
         debug('finished running configuration function, returning connection');
 
         conn.ready = true;
@@ -144,4 +150,9 @@ function onConnectionOpened (configureFn, err) {
         respondToConnectionRequests();
       });
   }
+}
+
+module.exports = {
+  getConnector: getConnector,
+  listConnectors: listConnectors
 }
