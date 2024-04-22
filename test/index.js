@@ -54,16 +54,16 @@ describe('obd-serial-connection', function () {
     }).to.throw('opts.serialPath should be a string provided to obd-serial-connection');
   });
 
-  it('getConnector should throw an assertion error (opts.serialOpts missing)', function () {
+  it('getConnector should throw an assertion error (opts.baudRate missing)', function () {
     expect(con.getConnector.bind(con.getConnector, {
       serialPath: 'dev/some-path',
-    })).to.throw('opts.serialOpts should be an Object provided to obd-serial-connection');
+    })).to.throw('opts.baudRate should be a number provided to obd-serial-connection');
   });
 
   it('getConnector should return a function', function () {
     expect(con.getConnector({
       serialPath: 'dev/some-path',
-      serialOpts: {}
+      baudRate: 38400
     })).to.be.a('function');
   });
 
@@ -79,7 +79,7 @@ describe('obd-serial-connection', function () {
 
     return con({
       serialPath: 'dev/some-path',
-      serialOpts: {}
+      baudRate: 38400
     })(configureFn)
       .then(function (conn) {
         expect(conn).to.be.an('object');
@@ -100,7 +100,7 @@ describe('obd-serial-connection', function () {
 
     var p = con({
       serialPath: 'dev/some-path',
-      serialOpts: {}
+      baudRate: 38400
     })(configureFn);
 
     return expect(p).to.be.eventually.rejectedWith(

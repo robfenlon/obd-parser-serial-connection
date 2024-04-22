@@ -22,21 +22,15 @@ var connQ = [];
 const getConnector = function (opts) {
 
   assert.equal(
-    typeof opts,
-    'object',
-    'an options object must be provided to obd-serial-connection'
-  );
-
-  assert.equal(
     typeof opts.serialPath,
     'string',
     'opts.serialPath should be a string provided to obd-serial-connection'
   );
 
   assert.equal(
-    typeof opts.serialOpts,
-    'object',
-    'opts.serialOpts should be an Object provided to obd-serial-connection'
+    typeof opts.baudRate,
+    'number',
+    'opts.baudRate should be a number provided to obd-serial-connection'
   );
 
   return function _obdSerialConnectorFn(configureFn) {
@@ -62,7 +56,10 @@ const getConnector = function (opts) {
         });
 
         // Create our connection
-        conn = new SerialPort(opts.serialPath, opts.serialOpts);
+        conn = new SerialPort({
+          path: opts.serialPath,
+          baudRate: opts.baudRate,
+        })
 
         // Connect to the serial port
         conn.on('open', function () {

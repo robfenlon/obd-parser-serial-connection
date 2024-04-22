@@ -22,10 +22,8 @@ var getConnector = require('obd-parser-serial-connection');
 
 // Returns a function that will allow us to connect to the serial port
 var connect = getConnector({
-  serialPath: '/dev/tty.usbserial',
-  serialOpts: {
-    baudrate: 38400
-  }
+  serialPath: 'COM1',
+  baudRate: 38400
 });
 
 connect(configureFunction)
